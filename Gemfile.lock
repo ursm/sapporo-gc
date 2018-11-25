@@ -1,0 +1,25 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    haml (5.0.4)
+      temple (>= 0.8.0)
+      tilt
+    icalendar (2.5.1)
+      ice_cube (~> 0.16)
+    ice_cube (0.16.3)
+    mini_portile2 (2.3.0)
+    nokogiri (1.8.5)
+      mini_portile2 (~> 2.3.0)
+    temple (0.8.0)
+    tilt (2.0.8)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  haml
+  icalendar
+  nokogiri
+
+BUNDLED WITH
+   1.16.2
