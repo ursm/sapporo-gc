@@ -97,7 +97,16 @@ HTML_ROOT   = Pathname.new('tmp/html')
 PUBLIC_ROOT = Pathname.new('public')
 
 if ENV['FETCH_HTML']
-  unless system("wget --mirror --accept=html --directory-prefix=#{HTML_ROOT} --no-host-directories --no-parent --wait=5 http://www.city.sapporo.jp/seiso/kaisyu/yomiage/index.html")
+  wget_flags = %W(
+    --accept=html
+    --directory-prefix=#{HTML_ROOT}
+    --mirror
+    --no-host-directories
+    --no-parent
+    --wait=5
+  )
+
+  unless system('wget', *wget_flags, 'http://www.city.sapporo.jp/seiso/kaisyu/yomiage/index.html')
     exit 1
   end
 end
