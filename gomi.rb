@@ -103,7 +103,6 @@ if ENV['FETCH_HTML']
 end
 
 PUBLIC_ROOT.join('ics').mkpath
-
 toc = Hash.new {|h, k| h[k] = {} }
 
 HTML_ROOT.join('seiso/kaisyu/yomiage/index.html').open do |index|
