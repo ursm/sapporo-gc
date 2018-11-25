@@ -39,7 +39,7 @@ class GarbageCollection
   end
 end
 
-def generate_calendar(html, title)
+def generate_calendar(group_html, title)
   re = /
     平成(?<heisei>\d+)年(?<month>\d+)月の(?:、|収集日です。)燃やせるごみは、毎週(?<burnable_wday>.+?)です。
     びん・缶・(?:ペ|ヘ゜)ット(?:ボ|ホ゛)トルは毎週(?<bottle_wday>.+?)、容器包装プラスチックは毎週(?<packaging_wday>.+?)です。?
@@ -48,7 +48,7 @@ def generate_calendar(html, title)
     (?:枝・葉・草は?(?<branch_day>.+?)の(?<branch_wday>.+?)です。|\d+月は?枝・葉・草の収集はありませんん?。)
   /x
 
-  matches = Nokogiri::HTML.parse(html).xpath('//*[@id="tmp_contents"]//p[a[@id]]/text()').each_with_object([]) {|node, memo|
+  matches = group_html.xpath('//*[@id="tmp_contents"]//p[a[@id]]/text()').each_with_object([]) {|node, memo|
     line = node.text.strip
 
     next if line.empty?
@@ -114,19 +114,18 @@ end
 PUBLIC_ROOT.join('ics').mkpath
 toc = Hash.new {|h, k| h[k] = {} }
 
-HTML_ROOT.join('seiso/kaisyu/yomiage/index.html').open do |index|
-  Nokogiri::HTML.parse(index).css('#tmp_contents a[href^="/seiso/kaisyu/yomiage/"]').each do |ward_link|
-    HTML_ROOT.join(ward_link[:href].delete_prefix('/')).open do |ward|
-      Nokogiri::HTML.parse(ward).css('#tmp_contents a[href^="/seiso/kaisyu/yomiage/carender/"]').each do |group_link|
-        HTML_ROOT.join(group_link[:href].delete_prefix('/')).open do |group|
-          path  = "ics/#{File.basename(group_link[:href], '.html')}.ics"
-          title = "札幌市ごみ収集日カレンダー #{ward_link.text}#{group_link.text}"
+index_html = HTML_ROOT.join('seiso/kaisyu/yomiage/index.html').open(&Nokogiri::HTML.method(:parse))
 
-          PUBLIC_ROOT.join(path).write generate_calendar(group, title).to_ical
-          toc[ward_link.text][group_link.text] = path
-        end
-      end
-    end
+index_html.css('#tmp_contents a[href^="/seiso/kaisyu/yomiage/"]').each do |ward_link|
+  ward_html = HTML_ROOT.join(ward_link[:href].delete_prefix('/')).open(&Nokogiri::HTML.method(:parse))
+
+  ward_html.css('#tmp_contents a[href^="/seiso/kaisyu/yomiage/carender/"]').each do |group_link|
+    group_html = HTML_ROOT.join(group_link[:href].delete_prefix('/')).open(&Nokogiri::HTML.method(:parse))
+    ics_path   = "ics/#{File.basename(group_link[:href], '.html')}.ics"
+    ics_title  = "札幌市ごみ収集日カレンダー #{ward_link.text}#{group_link.text}"
+
+    PUBLIC_ROOT.join(ics_path).write generate_calendar(group_html, ics_title).to_ical
+    toc[ward_link.text][group_link.text] = ics_path
   end
 end
 
