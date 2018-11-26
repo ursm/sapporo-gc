@@ -119,14 +119,20 @@ index_html = HTML_ROOT.join('seiso/kaisyu/yomiage/index.html').open(&Nokogiri::H
 index_html.css('#tmp_contents a[href^="/seiso/kaisyu/yomiage/"]').each do |ward_link|
   ward_html = HTML_ROOT.join(ward_link[:href].delete_prefix('/')).open(&Nokogiri::HTML.method(:parse))
 
-  ward_html.css('#tmp_contents a[href^="/seiso/kaisyu/yomiage/carender/"]').uniq {|group_link|
-    group_link[:href]
-  }.each do |group_link|
-    group_html = HTML_ROOT.join(group_link[:href].delete_prefix('/')).open(&Nokogiri::HTML.method(:parse))
-    ics_path   = "ics/#{File.basename(group_link[:href], '.html')}.ics"
+  groups = ward_html.css('#tmp_contents a[href^="/seiso/kaisyu/yomiage/carender/"]').map {|link|
+    [link, "ics/#{File.basename(link[:href], '.html')}.ics"]
+  }
+
+  groups.uniq {|link, ics_path|
+    link[:href]
+  }.each do |link, ics_path|
+    group_html = HTML_ROOT.join(link[:href].delete_prefix('/')).open(&Nokogiri::HTML.method(:parse))
 
     PUBLIC_ROOT.join(ics_path).write generate_calendar(group_html).to_ical
-    toc[ward_link.text][group_link.text] = ics_path
+  end
+
+  groups.each do |link, ics_path|
+    toc[ward_link.text][link.text] = ics_path
   end
 end
 
