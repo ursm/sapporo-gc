@@ -41,11 +41,11 @@ end
 
 def generate_calendar(group_html)
   re = /
-    平成(?<heisei>\d+)年(?<month>\d+)月の(?:、|収集日です。)燃やせるごみは、毎週(?<burnable_wday>.+?)です。
-    びん・缶・(?:ペ|ヘ゜)ット(?:ボ|ホ゛)トルは毎週(?<bottle_wday>.+?)、容器包装プラスチックは毎週(?<packaging_wday>.+?)です。?
-    雑がみは?(?<paper_day>.+?)の(?<paper_wday>.+?)です。
-    (?:燃やせないごみは(?<non_burnable_day>.+?)の(?<non_burnable_wday>.+?)です。|\d+月は燃やせないごみの収集はありません。)
-    (?:枝・葉・草は?(?<branch_day>.+?)の(?<branch_wday>.+?)です。|\d+月は?枝・葉・草の収集はありませんん?。)
+    (?<year>.+?)年(?<month>\d+)月の(?:、|収集日です。)燃やせるごみは、毎週(?<burnable_wday>.+?)です。
+    びん・缶・(?:ペ|ヘ゜)ット(?:ボ|ホ゛)トルは毎週(?<bottle_wday>.+?)、容器包装プラスチックは毎週(?<packaging_wday>.+?)です。?、?
+    雑+がみは?(?<paper_day>.+?)の(?<paper_wday>.+?)です。
+    (?:燃やせないごみは(?<non_burnable_day>.+?)の(?<non_burnable_wday>.+?)です。|(?:\d+月は)?燃やせないごみの収集はありません。)
+    (?:枝・葉・草は?(?<branch_day>.+?)の(?<branch_wday>.+?)です。|(?:\d+月[はの]?)?枝・葉・草の収集はありませんん?。)
   /x
 
   matches = group_html.xpath('//*[@id="tmp_contents"]//p[a[@id]]/text()').each_with_object([]) {|node, memo|
@@ -73,7 +73,7 @@ def generate_calendar(group_html)
       GarbageCollection.new('枝・葉・草',               days:  match[:branch_day]),
     ]
 
-    begin_of_month = Date.jisx0301("H#{match[:heisei]}.#{match[:month].rjust(2, '0')}.01")
+    begin_of_month = Wareki::Date.parse("#{match[:year].sub('平成31令和2', '令和2')}年 #{match[:month]}月 1日").to_date
     end_of_month   = Date.civil(begin_of_month.year, begin_of_month.month, -1)
 
     begin_of_month.upto end_of_month do |date|
