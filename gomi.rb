@@ -73,7 +73,7 @@ def generate_calendar(group_html)
       GarbageCollection.new('枝・葉・草',               days:  match[:branch_day]),
     ]
 
-    begin_of_month = Wareki::Date.parse("#{match[:year].sub('平成31令和2', '令和2')}年 #{match[:month]}月 1日").to_date
+    begin_of_month = Wareki::Date.parse("#{match[:year].sub('平成31令和2', '令和2').sub(/\A令和\z/, "令和#{Date.today.strftime('%Jg')}")}年 #{match[:month]}月 1日").to_date
     end_of_month   = Date.civil(begin_of_month.year, begin_of_month.month, -1)
 
     begin_of_month.upto end_of_month do |date|
@@ -136,7 +136,7 @@ index_html.css('#tmp_contents a[href^="/seiso/kaisyu/yomiage/"]').each do |ward_
   end
 end
 
-PUBLIC_ROOT.join('index.html').write Haml::Engine.new(<<~'HAML').render Object.new, toc: toc
+PUBLIC_ROOT.join('index.html').write Haml::Template.new { <<~'HAML' }.render Object.new, toc: toc
   !!!
 
   %html
